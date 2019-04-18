@@ -1,0 +1,20 @@
+{
+    "name": "fannypack/momo",
+    "description": "MTN MOMO api implementation",
+    "type": "library",
+    "require": {
+        "guzzlehttp/guzzle": "^6.3",
+        "ramsey/uuid": "^3.8"
+    },
+    "authors": [
+        {
+            "name": "Mpande Andrew",
+            "email": "andrewmvp007@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "FannyPack\\Momo\\": "src"
+        }
+    }
+}
