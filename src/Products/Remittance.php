@@ -13,4 +13,8 @@ namespace FannyPack\Momo\Products;
  * @package FannyPack\Momo\Products
  */
 class Remittance extends Disbursement
-{}
+{
+    protected function getProductBaseUrl() {
+        return self::BASE_URL . "/remittance";
+    }
+}

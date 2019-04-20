@@ -5,21 +5,14 @@
  * Date: 18/04/2019
  * Time: 18:39
  *
- * ProductInstance::create([
- *      'callbackUrl' => '',
- *      'environment' => '',
- *      'accountHolderIdType' => '',
- *      'subscriptionKey' => '',
- *      'xReferenceId' => '',
- *      'apiKey' => '',
- *      'preApproval' => ''
- * ]);
- *
  */
 
 namespace FannyPack\Momo\Products;
 
-
+use FannyPack\Momo\Responses\Balance;
+use FannyPack\Momo\Responses\Token;
+use FannyPack\Momo\Responses\TransactionStatus;
+use FannyPack\Momo\Traits\Configurations;
 use FannyPack\Momo\Traits\SandboxUserProvisioning;
 use GuzzleHttp\Client;
 use Ramsey\Uuid\Uuid;
@@ -30,11 +23,11 @@ use Ramsey\Uuid\Uuid;
  */
 abstract class Product
 {
-    use SandboxUserProvisioning;
+    use Configurations, SandboxUserProvisioning;
 
     const BASE_URL = "https://ericssonbasicapi2.azure-api.net";
 
-    const TOKEN_URI = "/token";
+    const TOKEN_URI = "/token/";
 
     const BALANCE_URI = "/v1_0/account/balance";
 
@@ -43,9 +36,14 @@ abstract class Product
     const API_USER_URI = "/v1_0/apiuser";
 
     /**
+     * @var string $callbackHost
+     */
+    protected $callbackHost = "http://localhost:8000";
+
+    /**
      * @var string $callbackUrl
      */
-    protected $callbackUrl = "http://localhost:8000";
+    protected $callbackUrl = "http://localhost:8000/callback";
 
     /**
      * @var string $environment
@@ -55,7 +53,7 @@ abstract class Product
     /**
      * @var string  $accountHolderIdType
      */
-    protected $accountHolderIdType = "MSISDN";
+    protected $accountHolderIdType = "msisdn";
 
     /**
      * @var string $subscriptionKey
@@ -73,31 +71,22 @@ abstract class Product
     protected $apiKey;
 
     /**
+     * @var string $accessToken
+     */
+    protected $accessToken;
+
+    /**
      * Product constructor.
      * @param $options
      */
     public function __construct($options) {
-        if(!isset($config['subscriptionKey']))
+        if(!isset($options['subscriptionKey']))
             throw new \InvalidArgumentException("subscriptionKey should be specified");
 
-        if(!isset($config['xReferenceId']))
+        if(!isset($options['xReferenceId']))
             throw new \InvalidArgumentException("xReferenceId should be specified");
 
-        foreach ($options as $option => $value) {
-            try{
-                $this->{$option} = $value;
-            }catch (\Exception $exception) {}
-        }
-    }
-
-    /**
-     * New product instance
-     *
-     * @param $options
-     * @return static
-     */
-    public static function create($options) {
-        return new static($options);
+        $this->setOptions($options);
     }
 
     /**
@@ -116,35 +105,29 @@ abstract class Product
         ]);
     }
 
-    /**
-     * Get product base url
-     *
-     * @return string
-     */
-    protected function getProductBaseUrl() {
-        $path = explode('\\', __CLASS__);
-        return self::BASE_URL . "/" . strtolower(array_pop($path));
-    }
+    abstract protected function getProductBaseUrl();
 
     /**
      * Get token
      *
-     * @return mixed
+     * @return Token
      * @throws \Exception
      */
     public function getToken() {
+        if(!$this->apiKey)
+            throw new \InvalidArgumentException("apiKey should be specified");
+
         try {
-            $resource = $this->getProductBaseUrl() . self::TOKEN_URI;
-            $response = $this->newClient()->post($resource, [
+            $response = $this->newClient()->post($this->getProductBaseUrl() . self::TOKEN_URI, [
                 'headers' => [
-                    'Authorization' => 'Basic '.base64_encode($this->xReferenceId . ':' . $this->apiKey),
+                    'Authorization' => 'Basic '.base64_encode($this->xReferenceId . ':' . $this->apiKey)
                 ],
                 'json' => [
                     'grant_type' => 'client_credentials',
                 ],
             ]);
 
-            return json_decode($response->getBody(), true);
+            return Token::create(json_decode($response->getBody(), true));
         } catch (\Exception $exception) {
             throw new \Exception("Unable to generate token");
         }
@@ -153,19 +136,22 @@ abstract class Product
     /**
      * Get account balance
      *
-     * @return mixed
+     * @return Balance
      * @throws \Exception
      */
     public function getAccountBalance() {
+        if(!$this->accessToken)
+            throw new \InvalidArgumentException("accessToken should be specified");
+
         try {
-            $resource = $this->getProductBaseUrl() . self::BALANCE_URI;
-            $response = $this->newClient()->get($resource, [
+            $response = $this->newClient()->get($this->getProductBaseUrl() . self::BALANCE_URI, [
                 'headers' => [
+                    'Authorization' => 'Bearer ' . $this->accessToken,
                     'X-Target-Environment' => $this->environment,
-                ],
+                ]
             ]);
 
-            return json_decode($response->getBody(), true);
+            return Balance::create(json_decode($response->getBody(), true));
         } catch (\Exception $exception) {
             throw new \Exception("Unable to get account balance");
         }
@@ -175,27 +161,29 @@ abstract class Product
      * Get account holder information
      *
      * @param $accountHolderId
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
     public function getAccountHolderInfo($accountHolderId) {
-        $resource = $this->getProductBaseUrl() . self::ACCOUNT_HOLDER_URI . "/" . $this->accountHolderIdType . "/" . $accountHolderId . "/active";
+        if(!$this->accessToken)
+            throw new \InvalidArgumentException("accessToken should be specified");
+
         try {
-            $response = $this->newClient()->get($resource, [
+            $url = $this->getProductBaseUrl() . self::ACCOUNT_HOLDER_URI . "/" . $this->accountHolderIdType . "/" . $accountHolderId . "/active";
+            $response = $this->newClient()->get($url, [
                 'headers' => [
+                    'Authorization' => 'Bearer ' . $this->accessToken,
                     'X-Target-Environment' => $this->environment,
                 ],
             ]);
 
-            return json_decode($response->getBody(), true);
+            return ['statusCode' => $response->getStatusCode()];
         } catch (\Exception $exception) {
             throw new \Exception("Unable to get account holder information");
         }
     }
 
     protected abstract function transactionUrl();
-
-    protected abstract function transactionStatusUrl();
 
     /**
      * Start a payment transaction
@@ -206,17 +194,21 @@ abstract class Product
      * @param $currency
      * @param string $payerMessage
      * @param string $payeeNote
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
     protected function transact($externalId, $partyId, $amount, $currency, $payerMessage = '', $payeeNote = '') {
+        if(!$this->accessToken)
+            throw new \InvalidArgumentException("accessToken should be specified");
+
         try {
-            $paymentRef = Uuid::uuid4()->toString();
+            $financialTransactionId = Uuid::uuid4()->toString();
             $response = $this->newClient()->post($this->transactionUrl(), [
                 'headers' => [
-                    'X-Reference-Id' => $paymentRef,
-                    'X-Callback-Url' => $this->callbackUrl,
+                    'X-Reference-Id' => $financialTransactionId,
+                    'X-Callback-Url' => $this->callbackHost,
                     'X-Target-Environment' => $this->environment,
+                    'Authorization' => 'Bearer ' . $this->accessToken
                 ],
                 'json' => [
                     'amount' => $amount,
@@ -228,10 +220,9 @@ abstract class Product
                     ],
                     'payerMessage' => $payerMessage,
                     'payeeNote' => $payeeNote,
-                ],
+                ]
             ]);
-
-            return json_decode($response->getBody(), true);
+            return ["statusCode" => $response->getStatusCode(), 'financialTransactionId' => $financialTransactionId];
         } catch (\Exception $exception) {
             throw new \Exception("Unable to complete transaction");
         }
@@ -241,19 +232,22 @@ abstract class Product
      * Get transaction status
      *
      * @param $paymentRef
-     * @return mixed
+     * @return TransactionStatus
      * @throws \Exception
      */
     protected function getTransactionStatus($paymentRef) {
+        if(!$this->accessToken)
+            throw new \InvalidArgumentException("accessToken should be specified");
+
         try {
-            $resource = $this->transactionStatusUrl() . "/" . $paymentRef;
-            $response = $this->newClient()->get($resource, [
+            $response = $this->newClient()->get($this->transactionUrl() . "/" . $paymentRef, [
                 'headers' => [
                     'X-Target-Environment' => $this->environment,
-                ],
+                    'Authorization' => 'Bearer ' . $this->accessToken
+                ]
             ]);
 
-            return json_decode($response->getBody(), true);
+            return TransactionStatus::create(json_decode($response->getBody(), true));
         } catch (\Exception $exception) {
             throw new \Exception("Unable to get transaction status");
         }

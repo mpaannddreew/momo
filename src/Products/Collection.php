@@ -7,6 +7,7 @@
  */
 
 namespace FannyPack\Momo\Products;
+use FannyPack\Momo\Responses\TransactionStatus;
 
 /**
  * Class Collection
@@ -18,13 +19,16 @@ class Collection extends Product
 
     const PRE_APPROVAL_URI = "/v1_0/preapproval";
 
+    /**
+     * @var bool $preApproval
+     */
     protected $preApproval = false;
 
-    protected function transactionUrl() {
-        return $this->getProductBaseUrl() . ($this->preApproval ? self::PRE_APPROVAL_URI: self::REQUEST_TO_PAY_URI);
+    protected function getProductBaseUrl() {
+        return self::BASE_URL . "/collection";
     }
 
-    protected function transactionStatusUrl() {
+    protected function transactionUrl() {
         return $this->getProductBaseUrl() . ($this->preApproval ? self::PRE_APPROVAL_URI: self::REQUEST_TO_PAY_URI);
     }
 
@@ -37,7 +41,7 @@ class Collection extends Product
      * @param $currency
      * @param string $payerMessage
      * @param string $payeeNote
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
     public function requestToPay($externalId, $partyId, $amount, $currency, $payerMessage = '', $payeeNote = '') {
@@ -47,11 +51,11 @@ class Collection extends Product
     /**
      * Get request to pay transaction status
      *
-     * @param $paymentRef
-     * @return mixed
+     * @param $financialTransactionId
+     * @return TransactionStatus
      * @throws \Exception
      */
-    public function getRequestToPayStatus($paymentRef) {
-        return $this->getTransactionStatus($paymentRef);
+    public function getRequestToPayStatus($financialTransactionId) {
+        return $this->getTransactionStatus($financialTransactionId);
     }
 }

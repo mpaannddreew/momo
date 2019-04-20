@@ -7,6 +7,8 @@
  */
 
 namespace FannyPack\Momo\Traits;
+use FannyPack\Momo\Responses\ApiKey;
+use FannyPack\Momo\Responses\ApiUser;
 
 
 /**
@@ -18,17 +20,17 @@ trait SandboxUserProvisioning
     /**
      * Create an api user
      *
-     * @return mixed
+     * @return string
      * @throws \Exception
      */
     public function createApiUser() {
         try {
             $response = $this->newClient()->post(self::BASE_URL . self::API_USER_URI, [
                 'headers' => ['X-Reference-Id' => $this->xReferenceId],
-                'json' => ['providerCallbackHost' => $this->callbackUrl]
+                'json' => ['providerCallbackHost' => $this->callbackHost]
             ]);
-            return json_decode($response->getBody(), true);
-        } catch (\Exception $e) {
+            return json_encode(['statusCode' => $response->getStatusCode()]);
+        } catch (\Exception $exception) {
             throw new \Exception("Unable to create an api user");
         }
     }
@@ -36,14 +38,14 @@ trait SandboxUserProvisioning
     /**
      * Validate api user
      *
-     * @return mixed
+     * @return ApiUser
      * @throws \Exception
      */
-    public function validateApiUser() {
+    public function getApiUser() {
         try {
             $response = $this->newClient()->get(self::BASE_URL . self::API_USER_URI . "/" . $this->xReferenceId);
-            return json_decode($response->getBody(), true);
-        } catch (\Exception $e) {
+            return ApiUser::create(json_decode($response->getBody(), true));
+        } catch (\Exception $exception) {
             throw new \Exception("Unable to validate api user");
         }
     }
@@ -51,14 +53,14 @@ trait SandboxUserProvisioning
     /**
      * Create api key
      *
-     * @return mixed
+     * @return ApiKey
      * @throws \Exception
      */
     public function createApiKey() {
         try {
             $response = $this->newClient()->post(self::BASE_URL . self::API_USER_URI . "/" . $this->xReferenceId . "/apikey");
-            return json_decode($response->getBody(), true);
-        } catch (\Exception $e) {
+            return ApiKey::create(json_decode($response->getBody(), true));
+        } catch (\Exception $exception) {
             throw new \Exception("Unable to create api key");
         }
     }

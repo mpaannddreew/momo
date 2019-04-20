@@ -7,6 +7,7 @@
  */
 
 namespace FannyPack\Momo\Products;
+use FannyPack\Momo\Responses\TransactionStatus;
 
 /**
  * Class Disbursement
@@ -14,13 +15,13 @@ namespace FannyPack\Momo\Products;
  */
 class Disbursement extends Product
 {
-    const TRANSFER_URI = "transfer";
+    const TRANSFER_URI = "/transfer";
 
-    protected function transactionUrl() {
-        return $this->getProductBaseUrl() . self::TRANSFER_URI;
+    protected function getProductBaseUrl() {
+        return self::BASE_URL . "/disbursement";
     }
 
-    protected function transactionStatusUrl() {
+    protected function transactionUrl() {
         return $this->getProductBaseUrl() . self::TRANSFER_URI;
     }
 
@@ -33,7 +34,7 @@ class Disbursement extends Product
      * @param $currency
      * @param string $payerMessage
      * @param string $payeeNote
-     * @return mixed
+     * @return array
      * @throws \Exception
      */
     public function transfer($externalId, $partyId, $amount, $currency, $payerMessage = '', $payeeNote = '') {
@@ -43,11 +44,11 @@ class Disbursement extends Product
     /**
      * Get transfer transaction status
      *
-     * @param $paymentRef
-     * @return mixed
+     * @param $financialTransactionId
+     * @return TransactionStatus
      * @throws \Exception
      */
-    public function transferStatus($paymentRef) {
-        return $this->getTransactionStatus($paymentRef);
+    public function transferStatus($financialTransactionId) {
+        return $this->getTransactionStatus($financialTransactionId);
     }
 }
