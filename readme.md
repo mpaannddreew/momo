@@ -15,7 +15,7 @@ Momo is a simple library in PHP for the MTN Mobile Money Open API.
 
 ## Signup For An Account
 
-Follow this link to our developer portal and [signup](https://momodeveloper.mtn.com/signup.html)
+Follow this link to the developer portal and [signup](https://momodeveloper.mtn.com/signup.html)
 for an account.
 
 ## Subscribe To Products
