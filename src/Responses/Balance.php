@@ -22,15 +22,6 @@ class Balance extends Response
     protected $currency;
 
     /**
-     * Balance constructor.
-     * @param $options
-     */
-    public function __construct($options)
-    {
-        $this->setOptions($options);
-    }
-
-    /**
      * @return string
      */
     public function getAvailableBalance()

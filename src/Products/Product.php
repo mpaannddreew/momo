@@ -127,9 +127,9 @@ abstract class Product
                 ],
             ]);
 
-            return Token::create(json_decode($response->getBody(), true));
+            return Token::create(json_decode($response->getBody()->getContents(), true));
         } catch (\Exception $exception) {
-            throw new \Exception("Unable to generate token");
+            throw new \Exception($exception->getMessage());
         }
     }
 
@@ -151,9 +151,9 @@ abstract class Product
                 ]
             ]);
 
-            return Balance::create(json_decode($response->getBody(), true));
+            return Balance::create(json_decode($response->getBody()->getContents(), true));
         } catch (\Exception $exception) {
-            throw new \Exception("Unable to get account balance");
+            throw new \Exception($exception->getMessage());
         }
     }
 
@@ -179,7 +179,7 @@ abstract class Product
 
             return ['statusCode' => $response->getStatusCode()];
         } catch (\Exception $exception) {
-            throw new \Exception("Unable to get account holder information");
+            throw new \Exception($exception->getMessage());
         }
     }
 
@@ -224,7 +224,7 @@ abstract class Product
             ]);
             return ["statusCode" => $response->getStatusCode(), 'financialTransactionId' => $financialTransactionId];
         } catch (\Exception $exception) {
-            throw new \Exception("Unable to complete transaction");
+            throw new \Exception($exception->getMessage());
         }
     }
 
@@ -247,9 +247,9 @@ abstract class Product
                 ]
             ]);
 
-            return TransactionStatus::create(json_decode($response->getBody(), true));
+            return TransactionStatus::create(json_decode($response->getBody()->getContents(), true));
         } catch (\Exception $exception) {
-            throw new \Exception("Unable to get transaction status");
+            throw new \Exception($exception->getMessage());
         }
     }
 }

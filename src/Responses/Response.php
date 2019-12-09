@@ -14,4 +14,9 @@ use FannyPack\Momo\Traits\Configurations;
 abstract class Response
 {
     use Configurations;
+
+    public function __construct($options)
+    {
+        $this->setOptions($options);
+    }
 }

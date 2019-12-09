@@ -57,8 +57,8 @@ $options = [
     // 'environment' => '', //(optional) default is sandbox
     // 'accountHolderIdType' => '', //(optional) default is msisdn
     'subscriptionKey' => '', //Product Subscription key
-    'xReferenceId' => '', //Api user reference id
-    'apiKey' => '', // Api user key
+    'xReferenceId' => '', //Api user reference id (in UUID format)
+    'apiKey' => '', // Api user key (Supply this after generating it at 'Create API Key')
     //'preApproval' => '', //(optional) default is false
     //'accessToken' => '' //Required for transactions
 ];

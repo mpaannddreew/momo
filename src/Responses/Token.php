@@ -27,15 +27,6 @@ class Token extends Response
     protected $expires_in;
 
     /**
-     * Token constructor.
-     * @param $options
-     */
-    public function __construct($options)
-    {
-        $this->setOptions($options);
-    }
-
-    /**
      * Access token
      *
      * @return string

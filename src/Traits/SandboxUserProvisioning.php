@@ -31,7 +31,7 @@ trait SandboxUserProvisioning
             ]);
             return json_encode(['statusCode' => $response->getStatusCode()]);
         } catch (\Exception $exception) {
-            throw new \Exception("Unable to create an api user");
+            throw new \Exception($exception->getMessage());
         }
     }
 
@@ -44,9 +44,9 @@ trait SandboxUserProvisioning
     public function getApiUser() {
         try {
             $response = $this->newClient()->get(self::BASE_URL . self::API_USER_URI . "/" . $this->xReferenceId);
-            return ApiUser::create(json_decode($response->getBody(), true));
+            return ApiUser::create(json_decode($response->getBody()->getContents(), true));
         } catch (\Exception $exception) {
-            throw new \Exception("Unable to validate api user");
+            throw new \Exception($exception->getMessage());
         }
     }
 
@@ -59,9 +59,9 @@ trait SandboxUserProvisioning
     public function createApiKey() {
         try {
             $response = $this->newClient()->post(self::BASE_URL . self::API_USER_URI . "/" . $this->xReferenceId . "/apikey");
-            return ApiKey::create(json_decode($response->getBody(), true));
+            return ApiKey::create(json_decode($response->getBody()->getContents(), true));
         } catch (\Exception $exception) {
-            throw new \Exception("Unable to create api key");
+            throw new \Exception($exception->getMessage());
         }
     }
 }

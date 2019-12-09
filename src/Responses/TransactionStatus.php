@@ -57,15 +57,6 @@ class TransactionStatus extends Response
     protected $reason = [];
 
     /**
-     * TransactionStatus constructor.
-     * @param $options
-     */
-    public function __construct($options)
-    {
-        $this->setOptions($options);
-    }
-
-    /**
      * @return string
      */
     public function getAmount()
