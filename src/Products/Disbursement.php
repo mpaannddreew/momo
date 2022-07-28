@@ -28,10 +28,10 @@ class Disbursement extends Product
     /**
      * Start transfer transaction
      *
-     * @param $externalId
-     * @param $partyId
-     * @param $amount
-     * @param $currency
+     * @param $externalId               The external Id
+     * @param $partyId                  The party Id
+     * @param $amount                   The amount Id
+     * @param $currency                 The currency of transaction
      * @param string $payerMessage
      * @param string $payeeNote
      * @return array
@@ -48,6 +48,7 @@ class Disbursement extends Product
      * @return TransactionStatus
      * @throws \Exception
      */
+
     public function transferStatus($financialTransactionId) {
         return $this->getTransactionStatus($financialTransactionId);
     }
